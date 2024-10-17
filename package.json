@@ -4,8 +4,13 @@
   "version": "0.0.1",
   "repository": "",
   "license": "MIT",
+  "scripts": {
+    "dev": "tsx ./scripts/compile.ts && haraka -c ."
+  },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@types/node": "^22.7.6",
+    "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
 }
