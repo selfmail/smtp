@@ -48,7 +48,7 @@ mail_from.is_resolvable
 # ----------
 # At least one rcpt_to plugin is REQUIRED for inbound email.
 check_adresse
-rcpt_to.in_host_list
+# We want to allow custom adresses, this means we can't use the "in host list"-feature
 # qmail-deliverable
 # rcpt_to.routes
 
