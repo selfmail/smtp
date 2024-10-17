@@ -1,2 +1,2 @@
-# selfmail smtp server
-The official smtp server for the email provider selfmail, made with Haraka and custom plugins.
+# 📨 Haraka app to send and receive emails
+This is the official smtp server for selfmail. This is an secured and powerfull server for receiving and sending emails. This server supports custom domains and more.
