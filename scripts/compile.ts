@@ -16,41 +16,55 @@ if not an error will be triggered from haraka.
 import { writeFile, readdir, readFile } from "node:fs/promises";
 import { statSync } from "node:fs";
 import path from "node:path";
-import { transpileModule, ModuleKind } from "typescript";
+import { transform } from "esbuild";
 
 type Plugin = {
-	name: string,
-}
+	name: string;
+};
 
-function compileTypeScript(code: string): string {
-	const result = transpileModule(code, {
-		compilerOptions: { module: ModuleKind.CommonJS },
-	});
-	return result.outputText;
-}
+// function to use consola and the other async functions
+(async () => {
+	const consola = await (await import("consola")).default;
+	consola.log("This is a test message");
 
-async function getAllPluginFiles(dirPath = "../src", pluginArray: string[] = []) {
-	const files = await readdir(dirPath);
-
-	for await (const file of files) {
-		const filePath = path.join(dirPath, file);
-
-		if (statSync(filePath).isDirectory()) {
-			// every plugin.ts file is a plugin
-			const subfolder = await readdir(filePath)
-			for (const subfolderFile in subfolder) {
-				// check if the file is an plugin, if not, go to the next file
-				if (subfolderFile === "plugin.ts") {
-					const pluginFile = await readFile(subfolderFile)
-					// modify this plugin file
-				}
-			}
-		} else {
-		}
+	async function compileTypeScript(code: string) {
+		let resultCode: string;
+		const result = await transform(code, {
+			loader: "ts", 
+			format: "cjs",
+		})
+		return result.code;
 	}
-	return pluginArray;
-}
 
-async function writePlugins() {
-	const files = await readdir("../src");
-}
+	async function getAllPluginFiles(
+		dirPath = "./src",
+		pluginArray: string[] = [],
+	) {
+		const files = await readdir(dirPath);
+		consola.log(files)
+
+		for await (const file of files) {
+			const filePath = path.join(dirPath, file);
+
+			if (statSync(filePath).isDirectory()) {
+				// every plugin.ts file is a plugin
+				const subfolder = await readdir(filePath);
+				for await (const subfolderFile of subfolder) {
+					// check if the file is an plugin, if not, go to the next file
+					if (subfolderFile === "plugin.ts") {
+						const pluginFile = await readFile(`./${filePath}/plugin.ts`);
+						consola.log(`Read file plugin.ts in ${filePath}`)
+						// modify this plugin file
+						consola.success("Successfully modified the ");
+					}
+				}
+			} else {
+			}
+		}
+		return pluginArray;
+	}
+	await getAllPluginFiles()
+	async function writePlugins() {
+		const files = await readdir("../src");
+	}
+})();
