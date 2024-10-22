@@ -3,7 +3,6 @@ exports.register = function () {
     this.register_hook('rcpt', 'check_email_in_db');
 };
 
-
 // check if the recipient is in the db
 exports.check_email_in_db = function (next, connection, params) {
     const email = params[0].address();

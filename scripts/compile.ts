@@ -19,6 +19,11 @@ import { statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+type hook = "rcpt"
+	| "rcpt_to"
+	| "data"
+	| "data_post"
+
 
 // object of the default export from a plugin.ts file
 type Plugin = {
@@ -26,6 +31,8 @@ type Plugin = {
 	name: string;
 	// code which is inside of this plugin
 	code: string;
+	// hook
+	hook: hook,
 };
 
 // compile ts to js, used for compiling the plugins from the /src/ folder to js into the plugins folder
@@ -36,6 +43,11 @@ async function compileTypeScript(code: string) {
 		format: "cjs",
 	})
 	return result.code;
+}
+
+// compile a plugin.ts file into a js file, for the haraka plugin system
+async function compilePlugin(code: string) {
+
 }
 
 // get the content of every plugin.ts file inside the /src/ folder
@@ -49,7 +61,6 @@ async function getAllPluginFiles({
 	consola: ConsolaInstance
 }) {
 	const files = await readdir(dirPath);
-	consola.log(files)
 	for (const file of files) {
 		const filePath = path.join(dirPath, file);
 
@@ -59,10 +70,12 @@ async function getAllPluginFiles({
 			for await (const subfolderFile of subfolder) {
 				// check if the file is an plugin, if not, go to the next file
 				if (subfolderFile === "plugin.ts") {
-					const pluginFile = await readFile(`./${filePath}/plugin.ts`);
+					const pluginFile = (await readFile(`./${filePath}/plugin.ts`)).toString()
 					consola.log(`Read file plugin.ts in ${filePath}`)
 					// modify this plugin file
-					consola.success("Successfully modified the ");
+					const plugin = await compilePlugin(pluginFile)
+					consola.success("Successfully modified the plugin: ", subfolderFile);
+					pluginArray.push(plugin)
 				}
 			}
 		} else {
@@ -70,11 +83,8 @@ async function getAllPluginFiles({
 	}
 	return pluginArray;
 }
-// compile a plugin.ts file into a js file, for the haraka plugin system
-async function compilePlugin() {
 
-}
-
+// save the plugin into the /plugins/ folder
 async function savePlugins() {
 
 }
