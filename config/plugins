@@ -63,6 +63,7 @@ check_adresse
 # rspamd
 # spamassassin
 # uribl
+log_data
 
 # QUEUE
 # ----------
