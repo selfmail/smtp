@@ -30,7 +30,6 @@ type Plugin = {
 
 // compile ts to js, used for compiling the plugins from the /src/ folder to js into the plugins folder
 async function compileTypeScript(code: string) {
-	let resultCode: string;
 	const result = await transform(code, {
 		loader: "ts",
 		format: "cjs",
@@ -56,7 +55,7 @@ async function getAllPluginFiles({
 	consola
 }: {
 	dirPath?: string,
-	pluginArray?: string[],
+	pluginArray?: { name: string }[],
 	consola: ConsolaInstance
 }) {
 	const files = await readdir(dirPath);
@@ -74,12 +73,19 @@ async function getAllPluginFiles({
 					// modify this plugin file
 					const plugin = await compilePlugin(pluginFile, consola)
 					consola.info("Successfully modified the plugin: ", subfolderFile);
-					pluginArray.push(plugin)
+					const pluginImport = await import(`../src/${file}/plugin.ts`)
+					const pluginInformation = pluginImport.default.plugin
+					console.log(pluginInformation)
+
+					pluginArray.push({
+						name: pluginInformation.name as string
+					})
 				}
 			}
 		} else {
 		}
 	}
+	console.log(pluginArray)
 	return pluginArray;
 }
 

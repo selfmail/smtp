@@ -1,19 +1,20 @@
-import consola from "consola";
+import { Plugin } from "../../types/plugin.js";
+import { This } from "../../types/this.js";
 
-exports.hook_data = (next: any, connection: any) => {
+exports.hook_data = function (this: This, next: any, connection: any) {
     // enable mail body parsing
-    consola.log("hey")
     connection.transaction.parse_body = true;
     next();
 }
 
-type This = {
-    loginfo: (m: string) => void,
-}
-
 exports.hook_data_post = function (this: This, next: any, connection: any,) {
     connection.transaction.parse_body = true;
-    this.loginfo("connection.transaction.body.bodytext");
+    this.logerror("connection.transaction.body.bodytext");
     this.loginfo(connection.transaction.body.children[0].bodytext);
     next()
 }
+
+exports.plugin = {
+    name: "check_sender",
+    hook: undefined
+} satisfies Plugin
