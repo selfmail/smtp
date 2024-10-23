@@ -18,13 +18,11 @@ type CompilePlugin = Plugin & {
 
 // compile ts to js, used for compiling the plugins from the /src/ folder to js into the plugins folder
 async function compileTypeScript(code: string) {
-	console.log(code);
 	const regex = /import \{[^}]*\} from "..\/..\/types\/status\.js";?/g;
 
 	// biome-ignore lint/style/noParameterAssign: otherwise, it would not work
 	code = code.replace(regex, '');
 
-	consola.log(code);
 	const result = await transform(code, {
 		loader: "ts",
 		format: "cjs",

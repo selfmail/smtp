@@ -1,7 +1,5 @@
 import type { This } from "../../types/this.js";
 
-
-
 exports.hook_data = function (this: This, next, connection) {
     // enable mail body parsing
     connection.transaction.parse_body = true;

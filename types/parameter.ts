@@ -1,4 +1,4 @@
-export type Next = (code?: undefined | null | any) => void
+export type Next = (code?: undefined | null) => void
 
 export type Connection = {
     wow: string
