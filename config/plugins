@@ -42,7 +42,7 @@
 # MAIL FROM
 # ----------
 mail_from.is_resolvable
-# spf
+spf
 
 # RCPT TO
 # ----------

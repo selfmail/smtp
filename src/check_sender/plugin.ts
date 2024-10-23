@@ -1,5 +1,5 @@
-import { Plugin } from "../../types/plugin.js";
-import { This } from "../../types/this.js";
+import type { Plugin } from "../../types/plugin.js";
+import type { This } from "../../types/this.js";
 
 exports.hook_data = function (this: This, next: any, connection: any) {
     // enable mail body parsing

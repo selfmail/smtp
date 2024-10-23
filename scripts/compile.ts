@@ -5,28 +5,16 @@
 	status codes as well as typesafety.
 */
 
-import { ConsolaInstance } from "consola";
+import { type ConsolaInstance, consola } from "consola";
 import { transform } from "esbuild";
 import { statSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import type { Plugin } from "../types/plugin.js";
 
-// every hook you can call
-type hook = "rcpt"
-	| "rcpt_to"
-	| "data"
-	| "data_post"
-
-
-// object of the default export from a plugin.ts file
-type Plugin = {
-	// name of this plugin
-	name: string;
-	// code which is inside of this plugin
-	code: string;
-	// hook
-	hook: hook,
-};
+type CompilePlugin = Plugin & {
+	code: string
+}
 
 // compile ts to js, used for compiling the plugins from the /src/ folder to js into the plugins folder
 async function compileTypeScript(code: string) {
@@ -37,16 +25,6 @@ async function compileTypeScript(code: string) {
 	return result.code;
 }
 
-// compile a plugin.ts file into a js file, for the haraka plugin system
-async function compilePlugin(code: string, consola: ConsolaInstance): Promise<Plugin> {
-	const js = await compileTypeScript(code)
-	consola.log(js)
-	return {
-		name: "hey",
-		code: "hey",
-		hook: "data"
-	}
-}
 
 // get the content of every plugin.ts file inside the /src/ folder
 async function getAllPluginFiles({
@@ -55,7 +33,7 @@ async function getAllPluginFiles({
 	consola
 }: {
 	dirPath?: string,
-	pluginArray?: { name: string }[],
+	pluginArray?: CompilePlugin[],
 	consola: ConsolaInstance
 }) {
 	const files = await readdir(dirPath);
@@ -65,33 +43,38 @@ async function getAllPluginFiles({
 		if (statSync(filePath).isDirectory()) {
 			// every plugin.ts file is a plugin
 			const subfolder = await readdir(filePath);
+
 			for await (const subfolderFile of subfolder) {
 				// check if the file is an plugin, if not, go to the next file
 				if (subfolderFile === "plugin.ts") {
+
 					const pluginFile = (await readFile(`./${filePath}/plugin.ts`)).toString()
 					consola.log(`Read file plugin.ts in ${filePath}`)
-					// modify this plugin file
-					const plugin = await compilePlugin(pluginFile, consola)
-					consola.info("Successfully modified the plugin: ", subfolderFile);
-					const pluginImport = await import(`../src/${file}/plugin.ts`)
-					const pluginInformation = pluginImport.default.plugin
-					console.log(pluginInformation)
 
-					pluginArray.push({
-						name: pluginInformation.name as string
-					})
+					// modify this plugin file
+					const plugin = await compileTypeScript(pluginFile)
+
+					const pluginImport = await import(`../src/${file}/plugin.ts`)
+					const pluginInformation = pluginImport.default.plugin as Plugin
+
+					pluginArray.push({ ...pluginInformation, code: plugin })
 				}
 			}
 		} else {
+			// TODO: implement the function for a normal file
 		}
 	}
-	console.log(pluginArray)
 	return pluginArray;
 }
 
-// save the plugin into the /plugins/ folder
-async function savePlugins(plugins: any) {
-
+// save the plugin into the /plugins/ folder and register them in the plugins file
+async function savePlugins(plugins: CompilePlugin[]) {
+	// save every plugin in the plugins folder
+	for (const plugin of plugins) {
+		// save the file into the plugins folder
+		await writeFile(`./plugins/${plugin.name}.js`, plugin.code)
+		consola.success(`Saved the plugin ${plugin.name} successfully! Please insert now ${plugin.name} into the plugins file (/config/plugins) in the right order!`)
+	}
 }
 
 // function to use consola and the other async functions
@@ -103,5 +86,5 @@ async function savePlugins(plugins: any) {
 	})
 	consola.info("Got every plugin.ts files. Starting saving them.")
 	await savePlugins(plugins)
-	consola.success("Everything is compiled an stored successfully!")
+	consola.success("Everything is compiled and stored successfully!")
 })();
