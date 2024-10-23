@@ -18,12 +18,20 @@ type CompilePlugin = Plugin & {
 
 // compile ts to js, used for compiling the plugins from the /src/ folder to js into the plugins folder
 async function compileTypeScript(code: string) {
+	console.log(code);
+	const regex = /import \{[^}]*\} from "..\/..\/types\/status\.js";?/g;
+
+	// biome-ignore lint/style/noParameterAssign: otherwise, it would not work
+	code = code.replace(regex, '');
+
+	consola.log(code);
 	const result = await transform(code, {
 		loader: "ts",
 		format: "cjs",
-	})
+	});
 	return result.code;
 }
+
 
 
 // get the content of every plugin.ts file inside the /src/ folder
@@ -51,7 +59,7 @@ async function getAllPluginFiles({
 					const pluginFile = (await readFile(`./${filePath}/plugin.ts`)).toString()
 					consola.log(`Read file plugin.ts in ${filePath}`)
 
-					// modify this plugin file
+					// modify this plugin file, remove the status import
 					const plugin = await compileTypeScript(pluginFile)
 
 					const pluginImport = await import(`../src/${file}/plugin.ts`)
@@ -76,6 +84,7 @@ async function savePlugins(plugins: CompilePlugin[]) {
 		consola.success(`Saved the plugin ${plugin.name} successfully! Please insert now ${plugin.name} into the plugins file (/config/plugins) in the right order!`)
 	}
 }
+
 
 // function to use consola and the other async functions
 (async () => {

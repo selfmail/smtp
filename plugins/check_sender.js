@@ -1,6 +1,6 @@
 exports.hook_data = function(next, connection) {
   connection.transaction.parse_body = true;
-  next();
+  next(OK);
 };
 exports.hook_data_post = function(next, connection) {
   connection.transaction.parse_body = true;
@@ -9,6 +9,5 @@ exports.hook_data_post = function(next, connection) {
   next();
 };
 exports.plugin = {
-  name: "check_sender",
-  hook: void 0
+  name: "check_sender"
 };
